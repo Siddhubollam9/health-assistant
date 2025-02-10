@@ -8,31 +8,27 @@ from nltk.tokenize import word_tokenize
 nltk.download('punkt')
 nltk.download('stopwords')
 
+# Load a pre-trained healthcare-focused model
+chatbot = pipeline("question-answering", model="deepset/roberta-base-squad2")
 
-# Load a pre-trained Hugging Face model
-chatbot = pipeline("text-generation", model="distilgpt2")
-
-
-# Define healthcare-specific response logic (or use a model to generate responses)
+# Define healthcare-specific response logic
 def healthcare_chatbot(user_input):
-    # Simple rule-based keywords to respond
-    if "symptom" in user_input:
+    user_input = user_input.lower()  # Convert input to lowercase for consistency
+
+    # Rule-based responses for common healthcare queries
+    if "symptom" in user_input or "fever" in user_input or "headache" in user_input:
         return "It seems like you're experiencing symptoms. Please consult a doctor for accurate advice."
     elif "appointment" in user_input:
         return "Would you like me to schedule an appointment with a doctor?"
-    elif "medication" in user_input:
+    elif "medication" in user_input or "painkiller" in user_input:
         return "It's important to take your prescribed medications regularly. If you have concerns, consult your doctor."
-    else:
-        # For other inputs, use the Hugging Face model to generate a response
-        response = chatbot(user_input, max_length=300, num_return_sequences=1)
-        # Specifies the maximum length of the generated text response, including the input and the generated tokens.
-        # If set to 3, the model generates three different possible responses based on the input.
-        return response[0]['generated_text']
-
+    
+    # AI-powered question-answering as a fallback
+    response = chatbot(question=user_input, context="General healthcare knowledge base including symptoms, treatments, and precautions.")
+    return response['answer']
 
 # Streamlit web app interface
 def main():
-    # Set up the web app title and input area
     st.title("Healthcare Assistant Chatbot")
     
     # Display a simple text input for user queries
@@ -47,5 +43,5 @@ def main():
         else:
             st.write("Please enter a query.")
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     main()
